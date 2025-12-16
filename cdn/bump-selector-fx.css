@@ -1,0 +1,200 @@
+/*!
+ * Bump Selector FX — Enhanced Animations (CDN) v1.0.0 (2025-12-16)
+ * Scrollbar-safe visual effects for bump selector dropdowns
+ * Place this AFTER bump-selector-styles.css
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WRAPPER CONTAINMENT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Create paint containment box & clip overflow */
+.orderFormBump [class^="bump-selector-wrap"] {
+  position: relative;
+  overflow: hidden;          /* clip in all browsers */
+  contain: paint;            /* confine painting to wrapper */
+}
+
+@supports (overflow: clip) {
+  .orderFormBump [class^="bump-selector-wrap"] {
+    overflow: clip;          /* modern precise clip */
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Glow effect (no horizontal growth) */
+@keyframes bumpGlow {
+  0%   { box-shadow: 0 0 0 0 rgba(218,165,32,0), 0 0 0 2px rgba(218,165,32,.25) inset; transform: scale(1); }
+  50%  { box-shadow: 0 0 0 12px rgba(218,165,32,.20), 0 0 0 2px rgba(218,165,32,.70) inset; transform: scale(1.01); }
+  100% { box-shadow: 0 0 0 0 rgba(218,165,32,0), 0 0 0 2px rgba(218,165,32,.25) inset; transform: scale(1); }
+}
+
+/* Sheen travels inside wrapper (limited to ±110%) */
+@keyframes bumpSheen {
+  0%   { transform: translate3d(-110%,0,0); opacity: 0; }
+  15%  { opacity: .85; }
+  50%  { opacity: .55; }
+  100% { transform: translate3d(110%,0,0); opacity: 0; }
+}
+
+/* Vertical-only micro bounce */
+@keyframes microBounce {
+  0%,100% { transform: translate3d(0,0,0); }
+  50%     { transform: translate3d(0,-1px,0); }
+}
+
+/* Moving border animation */
+@keyframes borderShift {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Label nudge animation */
+@keyframes labelNudge {
+  0%,100% { transform: translateY(0); }
+  30%     { transform: translateY(-1px); }
+  60%     { transform: translateY(1px); }
+}
+
+/* Error shake animation */
+@keyframes errorShake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-3px); }
+  40%     { transform: translateX(3px); }
+  60%     { transform: translateX(-2px); }
+  80%     { transform: translateX(2px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HARD RESET (Prevent conflicts)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.orderFormBump [class^="bump-selector-wrap"]::after {
+  animation: none !important;
+  -webkit-animation: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CSS-ONLY TRIGGER (:has() selector for checked bumps)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@supports selector(:has(*)) {
+  
+  /* Animated gold border + micro bounce when bump is checked */
+  .orderFormBump:has(input[id^="bump-select-checker"]:checked)
+  [class^="bump-selector-wrap"] {
+    border: 2px solid transparent;
+    border-radius: 6px;
+    background-image:
+      linear-gradient(#FFFACD, #FFFACD),                         /* inner panel */
+      linear-gradient(90deg, #b8860b, #ffd700, #b8860b);         /* moving border */
+    background-clip: padding-box, border-box;
+    background-origin: border-box;
+    background-size: auto, 200% 100%;
+    animation: borderShift 2.6s linear infinite, microBounce 6s ease-in-out infinite !important;
+    margin-bottom: 6px;
+  }
+  
+  /* Continuous sheen effect (clipped by wrapper) */
+  .orderFormBump:has(input[id^="bump-select-checker"]:checked)
+  [class^="bump-selector-wrap"]::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border-radius: 6px;
+    background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.97) 22%, transparent 46%);
+    pointer-events: none;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    animation-name: bumpSheen !important;
+    animation-duration: 1.5s !important;
+    animation-timing-function: linear !important;
+    animation-iteration-count: infinite !important;
+    animation-direction: normal !important;
+    animation-fill-mode: none !important;
+    animation-play-state: running !important;
+  }
+  
+  /* Select glow: quick "hello" then soft looping */
+  .orderFormBump:has(input[id^="bump-select-checker"]:checked)
+  [class^="bump-selector-wrap"] select {
+    animation: bumpGlow .65s ease-out 1, bumpGlow 8s ease-in-out infinite !important;
+  }
+  
+  /* Label nudge once at check */
+  .orderFormBump:has(input[id^="bump-select-checker"]:checked)
+  .quantity-selector-label {
+    animation: labelNudge .6s ease 1 !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   JAVASCRIPT FALLBACK (for browsers without :has() support)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Add .attention-pulse class via JS for same effect */
+[class^="bump-selector-wrap"].attention-pulse {
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background-image:
+    linear-gradient(#FFFACD, #FFFACD),
+    linear-gradient(90deg, #b8860b, #ffd700, #b8860b);
+  background-clip: padding-box, border-box;
+  background-origin: border-box;
+  background-size: auto, 200% 100%;
+  animation: borderShift 2.6s linear infinite, microBounce 6s ease-in-out infinite !important;
+}
+
+[class^="bump-selector-wrap"].attention-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 6px;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.97) 22%, transparent 46%);
+  pointer-events: none;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  animation-name: bumpSheen !important;
+  animation-duration: 1.5s !important;
+  animation-timing-function: linear !important;
+  animation-iteration-count: infinite !important;
+}
+
+[class^="bump-selector-wrap"].attention-pulse select {
+  animation: bumpGlow .65s ease-out 1, bumpGlow 8s ease-in-out infinite !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UX ENHANCEMENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Focus state for accessibility */
+.orderFormBump [class^="bump-selector-wrap"] select:focus-visible {
+  outline: 2px solid #DAA520;
+  outline-offset: 2px;
+}
+
+/* Error state animation */
+select.elInputError {
+  border-color: #d93025 !important;
+  animation: errorShake .3s ease-in-out 2 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCESSIBILITY: Respect reduced motion preferences
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .orderFormBump [class^="bump-selector-wrap"],
+  .orderFormBump [class^="bump-selector-wrap"]::after,
+  .orderFormBump [class^="bump-selector-wrap"] select,
+  .orderFormBump .quantity-selector-label {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* End Bump Selector FX v1.0.0 */
