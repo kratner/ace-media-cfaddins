@@ -1,0 +1,424 @@
+  <script type="text/javascript">
+       //DO NOT REMOVE - DRIVES REVENUE
+       var AddShoppersWidgetOptions = { 'loadCss': false, 'pushResponse': false };
+           (!function(){
+               var t=document.createElement("script");
+               t.type="text/javascript",
+               t.async=!0,
+               t.id="AddShoppers",
+               t.src="https://shop.pe/widget/widget_async.js#67096502cc42b61145f51559",
+               document.getElementsByTagName("head")[0].appendChild(t)
+           }());
+       </script>
+
+<script>
+$(window).bind("load", function() {
+$("#bump_offer_5009088").trigger("click")
+});
+</script>
+
+<!-- © 2025 CF Pro Tools | DOD Coin Rearrange Products -->
+<script src="https://cdn.cfptaddons.com/b29abaaa-924c-4bb2-b881-2bd2af7c8d92.js" name="DOD Coin Rearrange Products" defer="defer"></script>
+
+<!-- © 2023 CF Pro Tools | USA Only Shipping  -->
+<script src="https://cdn.cfptaddons.com/04fc9bfe-57c9-4c4b-8a15-45faedc53a9f.js" name="USA Only Shipping " defer="defer"></script>
+
+<!-- © 2023 CF Pro Tools | Date Replace Pro With Math 1 -->
+<script src="https://cdn.cfptaddons.com/c30cfc5d-d4c4-4344-a465-73df78c531d2.js" name="Date Replace Pro With Math 1" defer="defer"></script>
+
+<!-- © 2025 CF Pro Tools | DOD Coin | Default Selction -->
+<script src="https://cdn.cfptaddons.com/456820dc-643f-4a87-aafe-36962c093242.js" name="DOD Coin | Default Selction" defer="defer"></script>
+
+<!-- © 2025 CF Pro Tools | DOD coin | Best Seller -->
+<script src="https://cdn.cfptaddons.com/a52db8e7-6250-46ad-b883-784f914a5f17.js" name="DOD coin | Best Seller" defer="defer"></script>
+
+<!-- © 2025 CF Pro Tools | DOD Coin | Order Summary -->
+<script src="https://cdn.cfptaddons.com/2beef0c9-0a50-471a-aec7-a2114d5c117f.js" name="DOD Coin | Order Summary" defer="defer"></script>
+
+<!-- © 2024 CF Pro Tools | Multiple Bumps 1 -->
+<script src="https://cdn.cfptaddons.com/ac1a077a-3c8f-4dfd-b365-c7a346df100a.js" name="Multiple Bumps 1" defer="defer"></script>
+
+<!-- © 2024 CF Pro Tools | Bump Content 1 -->
+<script src="https://cdn.cfptaddons.com/705aaccb-72b1-4c56-89a8-61bc268a2f05.js" name="Bump Content 1" defer="defer"></script>
+
+<!-- © 2024 CF Pro Tools | Scroll To Error 1 -->
+<script src="https://cdn.cfptaddons.com/c6d8b58c-9db9-4a31-8db4-56588fc30e60.js" name="Scroll To Error 1" defer="defer"></script>
+
+
+<script>
+/* =========================================================
+   ClickFunnels Classic – Hidden Product Upsell Popup
+   Version: 3.5.0 (multi-product hide on upsell)
+   Author: Keith Ratner
+   ---------------------------------------------------------
+   WHAT'S NEW (v3.5.0):
+   - Added alsoHideOnUpsell config to hide additional products
+     when upsell is accepted.
+   - Extra hidden products are restored on revert.
+   - Persists extra product IDs in data attributes.
+
+   PREVIOUS (v3.4.1):
+   - Revert trigger is now delegated (survives CF DOM rewrites).
+   - Persists data attributes briefly after selection to resist repaint.
+   - Pointer cursor on highlighted row.
+   ========================================================= */
+
+
+/* ---------- CONFIG ---------- */
+var hideProds = ['5022043'];               // hidden upsell product(s)
+var replaceMap = { '5009059': '5022043' }; // trigger → upsell
+var alsoHideOnUpsell = { '5022043': ['5009061'] };  // upsell ID → extra products to hide
+
+
+// Defaults used ONLY when editor content lacks buttons:
+var UPS_COPY_DEFAULTS = {
+  ctaYes: 'Yes, Upgrade My Order Now!',
+  ctaNo:  "No, Thanks. I Don't Want This Upgrade"
+};
+
+
+// CTA color settings (global defaults)
+var CTA_COLORS_DEFAULT = {
+  yesBg: 'rgb(18,183,0)',
+  yesText: '#ffffff',
+  yesSheen: 'rgba(255,255,255,.3)',
+  yesShadow: 'rgba(0,0,0,.12)',
+  noBg: 'red',
+  noText: 'white'
+};
+
+
+// Optional per-upsell CTA color overrides (keyed by UPSOLD product ID)
+var CTA_COLOR_OVERRIDES = {
+  // '4991518': { yesBg:'#28a745', yesText:'#fff', noText:'#666' }
+};
+
+
+$(function () {
+  /* ---------- Styles ---------- */
+  if (!document.getElementById('upsellV35CSS')) {
+    var css = [
+      /* highlighted row (dashed red border + negative side margins) */
+      '.elOrderProductOptinProducts[data-upsell-hilite="1"]{',
+      '  display:flex!important;',
+      '  border:6px dashed rgb(255,0,0)!important;',
+      '  border-radius:6px!important;',
+      '  margin-bottom:8px!important;',
+      '  margin-right:-14px!important;',
+      '  margin-left:-14px!important;',
+      '  cursor:pointer;', /* make it feel clickable */
+      '}',
+
+
+      /* modal shell (editor content is injected inside) */
+      '.upsellBC-backdrop{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;}',
+      '.upsellBC-box{max-width:680px;width:94vw;max-height:90vh;overflow:auto;background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);} ',
+      '.upsellBC-body{padding:0;}',
+
+
+      /* default action area (only used if editor content lacks buttons) */
+      '.upsellBC-actions{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 16px 20px;}',
+      '.upsellBC-btn{width:min(520px,90%);padding:14px 16px;border-radius:8px;font-weight:400;border:0;cursor:pointer;position:relative;overflow:hidden;text-align:center;}',
+
+
+      /* CTA colors via CSS variables with fallbacks */
+      '.upsellBC-yes{',
+      '  background:var(--ups-yes-bg, ' + CTA_COLORS_DEFAULT.yesBg + ');',
+      '  color:var(--ups-yes-text, ' + CTA_COLORS_DEFAULT.yesText + ');',
+      '  font-size:2rem;',
+      '  transition:transform .15s ease;',
+      '  box-shadow:0 6px 12px var(--ups-yes-shadow, ' + CTA_COLORS_DEFAULT.yesShadow + ');',
+      '}',
+      '.upsellBC-yes::before{content:"";position:absolute;top:0;left:-75%;width:50%;height:100%;',
+      '  background:linear-gradient(120deg,var(--ups-yes-sheen, ' + CTA_COLORS_DEFAULT.yesSheen + ') 0%,rgba(255,255,255,0) 60%);',
+      '  transform:skewX(-25deg);}',
+      '.upsellBC-yes:hover::before{animation:shine 1s ease-in-out;}',
+      '@keyframes shine{0%{left:-75%;}100%{left:125%;}}',
+      '.upsellBC-yes:hover{transform:scale(1.02);} ',
+
+
+      /* make "No" look like a text link under the button */
+      '.upsellBC-no{',
+      '  background:var(--ups-no-bg, ' + CTA_COLORS_DEFAULT.noBg + ');',
+      '  color:var(--ups-no-text, ' + CTA_COLORS_DEFAULT.noText + ');',
+      '  width:auto;padding:6px 5px;border:0;box-shadow:none;',
+      '}',
+      '.upsellBC-no:hover{text-decoration:underline;}',
+
+
+      /* utility if designers add their own buttons; keep their layout stacked on small screens */
+      '@media (max-width:560px){ .upsellBC-actions [data-upsell-yes], .upsellBC-actions [data-upsell-no]{ width:100%; } }'
+    ].join('');
+    $('head').append('<style id="upsellV35CSS">'+css+'</style>');
+  }
+
+
+  // Initialize global CSS variables once
+  function setCtaVars($target, colors){
+    var t = $target.get(0).style;
+    t.setProperty('--ups-yes-bg',   colors.yesBg);
+    t.setProperty('--ups-yes-text', colors.yesText);
+    t.setProperty('--ups-yes-sheen',colors.yesSheen);
+    t.setProperty('--ups-yes-shadow',colors.yesShadow);
+    t.setProperty('--ups-no-bg',    colors.noBg);
+    t.setProperty('--ups-no-text',  colors.noText);
+  }
+
+
+  /* ---------- Helpers ---------- */
+  var RADIO_SEL = 'input[type="radio"][name="purchase[product_id]"]';
+  function radioByVal(val){ return $(RADIO_SEL + '[value="'+val+'"]'); }
+  function rowOf($radio){ return $radio.closest('.clearfix.elOrderProductOptinProducts'); }
+
+
+  /* ---------- Hide upsell rows initially ---------- */
+  $.each(hideProds, function (_, id) { rowOf(radioByVal(id)).hide(); });
+
+
+  /* ---------- Harvest editor modal sections ---------- */
+  var harvested = {}; // { upsellId: html }
+  var fallbackHtml = '';
+  $('[data-title]').each(function(){
+    var $sec = $(this);
+    var title = ($sec.attr('data-title')||'').trim();
+    if (!title) return;
+
+
+    var m = title.match(/cf-upsell-modal-(\d+)/i);
+    if (m && m[1]) {
+      harvested[m[1]] = $('.containerInner', $sec).first().html() || '';
+      $sec.remove();
+      return;
+    }
+    if (/^cf-upsell-modal\b/i.test(title)) {
+      fallbackHtml = $('.containerInner', $sec).first().html() || fallbackHtml;
+      $sec.remove();
+    }
+  });
+
+
+  function getEditorModalHtml(upsellId){
+    return harvested[upsellId] || fallbackHtml || '';
+  }
+
+
+  /* ---------- Modal shells ---------- */
+  var $mainModal = $(
+    '<div id="upsellBC" class="upsellBC-backdrop" role="dialog" aria-modal="true">' +
+      '<div class="upsellBC-box"><div class="upsellBC-body" id="upsellBC-body"></div></div>' +
+    '</div>'
+  );
+  var $revertModal = $(
+    '<div id="upsellRevertBC" class="upsellBC-backdrop" role="dialog" aria-modal="true">' +
+      '<div class="upsellBC-box" style="max-width:420px;">' +
+        '<div class="upsellBC-body" style="padding:18px;text-align:center;">' +
+          '<p style="margin:0 0 12px;font-weight:600;">Return to your original selection?</p>' +
+          '<div class="upsellBC-actions">' +
+            '<button id="revertYes" class="upsellBC-btn upsellBC-yes" style="background:rgb(255,0,0);">Yes, Revert</button>' +
+            '<button id="revertNo"  class="upsellBC-btn upsellBC-no">No, Keep Upgrade</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>'
+  );
+  $('body').append($mainModal, $revertModal);
+
+
+  // Set global CTA variables on the main modal container
+  setCtaVars($('.upsellBC-box'), CTA_COLORS_DEFAULT);
+
+
+  /* ---------- Content normalization (CTAs + image hydration) ---------- */
+  function ensureCTAs($root){
+    var hasYes = $root.find('[data-upsell-yes]').length > 0;
+    var hasNo  = $root.find('[data-upsell-no]').length > 0;
+    if (!hasYes || !hasNo) {
+      var $actions = $('<div class="upsellBC-actions"></div>');
+      $actions.append('<button class="upsellBC-btn upsellBC-yes" data-default-yes>'+UPS_COPY_DEFAULTS.ctaYes+'</button>');
+      $actions.append('<button class="upsellBC-btn upsellBC-no"  data-default-no>'+UPS_COPY_DEFAULTS.ctaNo+'</button>');
+      $root.append($actions);
+    } else {
+      // If designers provided their own elements, push toward stacked look
+      $root.find('[data-upsell-yes], [data-upsell-no]').each(function(){
+        this.style.display = 'block';
+        this.style.margin = '6px auto';
+      });
+    }
+  }
+
+
+  function absolutize(url){
+    if (!url) return url;
+    if (url.indexOf('//') === 0) return (location.protocol || 'https:') + url;
+    if (/^https?:/i.test(url)) return url;
+    try { return new URL(url, window.location.origin).href; } catch(e) { return url; }
+  }
+
+
+  function hydrateImages($root){
+    $root.find('img').each(function(){
+      var $img = $(this);
+      var ds = $img.attr('data-src') || $img.attr('data-cfsrc') || $img.attr('data-lazy') || '';
+      if (ds) {
+        $img.attr('src', absolutize(ds));
+        $img.removeAttr('data-src data-cfsrc data-lazy');
+      } else {
+        var src = $img.attr('src');
+        if (src && src.indexOf('//') === 0) $img.attr('src', absolutize(src));
+      }
+      $img.attr('loading', 'eager');
+    });
+  }
+
+
+  function openMainModal(fromId, toId){
+    var html = getEditorModalHtml(toId);
+
+
+    if (html) {
+      $('#upsellBC-body').html(html);
+    } else {
+      $('#upsellBC-body').html(
+        '<div style="padding:18px 16px;text-align:center;">' +
+          '<div style="background:rgb(255,227,0);color:rgb(255,0,0);font-weight:800;font-size:20px;padding:10px;border-radius:6px 6px 0 0;">Congratulations!</div>' +
+          '<div style="padding:14px 10px;font-weight:600;">Special Upgrade Available</div>' +
+        '</div>'
+      );
+    }
+
+
+    // Apply per-upsell CTA color overrides (if any)
+    var colors = CTA_COLOR_OVERRIDES[toId] ? Object.assign({}, CTA_COLORS_DEFAULT, CTA_COLOR_OVERRIDES[toId]) : CTA_COLORS_DEFAULT;
+    setCtaVars($('#upsellBC .upsellBC-box'), colors);
+
+
+    var $body = $('#upsellBC-body');
+    hydrateImages($body);
+    ensureCTAs($body);
+
+
+    $('#upsellBC').css('display','flex').data({fromId:fromId, toId:toId});
+  }
+  function closeMainModal(){ $('#upsellBC').hide().removeData(); }
+
+
+  function openRevertModal(fromId, toId){
+    $('#upsellRevertBC').css('display','flex').data({fromId:fromId,toId:toId});
+  }
+  function closeRevertModal(){ $('#upsellRevertBC').hide().removeData(); }
+
+
+  // Click outside to close
+  $(document).on('click', '#upsellBC', function(e){ if (e.target.id === 'upsellBC') closeMainModal(); });
+  $(document).on('click', '#upsellRevertBC', function(e){ if (e.target.id === 'upsellRevertBC') closeRevertModal(); });
+
+
+  /* ---------- Trigger popup when selecting a trigger product ---------- */
+  var shownFor = {};
+  $(document).on('change', RADIO_SEL, function(){
+    var chosenId = $(this).val();
+    if (replaceMap.hasOwnProperty(chosenId) && !shownFor[chosenId]){
+      shownFor[chosenId] = true;
+      var upsellId = replaceMap[chosenId];
+      if (radioByVal(upsellId).length) openMainModal(chosenId, upsellId);
+    }
+  });
+
+
+  /* ---------- YES / NO handling (supports editor or default CTAs) ---------- */
+  function persistAttrs($row, fromId, toId, extras){
+    // Tag attributes and reapply shortly after in case CF repaints
+    var ex = (extras || []).join(',');
+    $row.attr({'data-upsell-hilite':'1','data-upsell-from':fromId,'data-upsell-to':toId,'data-upsell-extras':ex});
+    setTimeout(function(){ $row.attr({'data-upsell-hilite':'1','data-upsell-from':fromId,'data-upsell-to':toId,'data-upsell-extras':ex}); }, 80);
+    setTimeout(function(){ $row.attr({'data-upsell-hilite':'1','data-upsell-from':fromId,'data-upsell-to':toId,'data-upsell-extras':ex}); }, 300);
+  }
+
+
+  function handleYes(fromId, toId){
+    var $fromRadio = radioByVal(fromId), $toRadio = radioByVal(toId);
+    var $fromRow = rowOf($fromRadio), $toRow = rowOf($toRadio);
+
+
+    // Swap visibility
+    $toRow.css('display','flex');
+    $fromRow.hide();
+
+
+    // Hide additional products if configured
+    var extras = alsoHideOnUpsell[toId] || [];
+    $.each(extras, function(_, xid){ rowOf(radioByVal(xid)).hide(); });
+
+
+    // Select upsell & notify CF
+    $toRadio.prop('checked', true).trigger('click').trigger('change');
+
+
+    // Mark + persist attributes for delegated revert (including extras)
+    persistAttrs($toRow, fromId, toId, extras);
+  }
+
+
+  // YES/NO from modal (designer or default buttons)
+  $(document).on('click', '#upsellBC [data-upsell-yes], #upsellBC [data-default-yes], #upsellBC .upsellBC-yes', function(e){
+    e.preventDefault(); e.stopPropagation();
+    var d = $('#upsellBC').data(); closeMainModal();
+    handleYes(d.fromId, d.toId);
+  });
+  $(document).on('click', '#upsellBC [data-upsell-no], #upsellBC [data-default-no], #upsellBC .upsellBC-no', function(e){
+    e.preventDefault(); e.stopPropagation();
+    closeMainModal();
+  });
+
+
+  /* ---------- Delegated revert trigger (survives DOM rewrites) ---------- */
+  $(document).on('click', '.elOrderProductOptinProducts[data-upsell-hilite="1"]', function(ev){
+    // Ignore clicks directly on form controls/labels/prices to avoid accidental pop
+    var $t = $(ev.target);
+    if ($t.is('input, label, .elOrderProductOptinPrice, [data-cf-product-price]')) return;
+
+
+    var $row = $(this);
+    var fromId = $row.attr('data-upsell-from');
+    var toId   = $row.attr('data-upsell-to') || ($row.find('input[type="radio"]').val() || '');
+
+
+    if (fromId && toId) openRevertModal(fromId, toId);
+  });
+
+
+  /* ---------- Revert flow ---------- */
+  $(document).on('click', '#revertYes', function(e){
+    e.preventDefault();
+    var d = $('#upsellRevertBC').data(), fromId = d.fromId, toId = d.toId;
+
+
+    var $fromRadio = radioByVal(fromId), $toRadio = radioByVal(toId);
+    var $fromRow = rowOf($fromRadio), $toRow = rowOf($toRadio);
+
+
+    $fromRow.css('display','flex');
+
+
+    // Restore additional hidden products
+    var extras = ($toRow.attr('data-upsell-extras') || '').split(',').filter(Boolean);
+    $.each(extras, function(_, xid){ rowOf(radioByVal(xid)).css('display','flex'); });
+
+
+    $toRow.hide()
+      .attr('data-upsell-hilite','0')
+      .removeAttr('data-upsell-from data-upsell-to data-upsell-extras');
+
+
+    $fromRadio.prop('checked', true).trigger('click').trigger('change');
+
+
+    shownFor[fromId] = false; // allow the prompt again
+    closeRevertModal();
+  });
+
+
+  $(document).on('click', '#revertNo', function(e){ e.preventDefault(); closeRevertModal(); });
+});
+/* End ClickFunnels Classic – Hidden Product Upsell Popup v3.5.0 */
+</script>
