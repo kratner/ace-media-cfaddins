@@ -112,21 +112,30 @@
       bumpIndex++;
       console.log('[Bump Selector] Processing bump ' + bumpIndex + ' with mainProductId: ' + bumpConfig.mainProductId);
       
-      // Find the bump section by looking for checkbox with id="bump_offer_XXXXX"
-      var $bumpCheckbox = $('#bump_offer_' + bumpConfig.mainProductId);
-      var $bumpSection = $bumpCheckbox.closest('.orderFormBump');
-
+      // Reordering-safe: locate bump container using the original working method
+      // This searches for radio buttons in the main product table, then finds the corresponding bump
+      var $bumpSection = $();
+      
+      if (bumpConfig.mainProductId) {
+        $bumpSection = $('input[type="radio"][value="' + bumpConfig.mainProductId + '"]').first().closest('.orderFormBump');
+      }
+      
       // Try associated IDs if main product not found
       if ($bumpSection.length === 0 && Array.isArray(bumpConfig.associatedIds)) {
         console.log('[Bump Selector] Main product not found, trying associatedIds:', bumpConfig.associatedIds);
         for (var i = 0; i < bumpConfig.associatedIds.length; i++) {
-          $bumpCheckbox = $('#bump_offer_' + bumpConfig.associatedIds[i]);
-          $bumpSection = $bumpCheckbox.closest('.orderFormBump');
+          $bumpSection = $('input[type="radio"][value="' + bumpConfig.associatedIds[i] + '"]').first().closest('.orderFormBump');
           if ($bumpSection.length) {
             console.log('[Bump Selector] Found bump section using associatedId: ' + bumpConfig.associatedIds[i]);
             break;
           }
         }
+      }
+      
+      // Fallback to index-based selection
+      if ($bumpSection.length === 0) {
+        $bumpSection = $('.orderFormBump').eq(bumpIndex - 1);
+        console.log('[Bump Selector] Using fallback index-based selection for bump ' + bumpIndex);
       }
 
       if ($bumpSection.length === 0) {
