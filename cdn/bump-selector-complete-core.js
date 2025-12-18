@@ -112,19 +112,14 @@
       bumpIndex++;
       console.log('[Bump Selector] Processing bump ' + bumpIndex + ' with mainProductId: ' + bumpConfig.mainProductId);
       
-      // Reordering-safe: locate bump container using the original working method
-      // This searches for radio buttons in the main product table, then finds the corresponding bump
-      var $bumpSection = $();
-      
-      if (bumpConfig.mainProductId) {
-        $bumpSection = $('input[type="radio"][value="' + bumpConfig.mainProductId + '"]').first().closest('.orderFormBump');
-      }
+      // Find bump section by data-title attribute (cf-multi-bump-XXXXX)
+      var $bumpSection = $('[data-title="cf-multi-bump-' + bumpConfig.mainProductId + '"]');
       
       // Try associated IDs if main product not found
       if ($bumpSection.length === 0 && Array.isArray(bumpConfig.associatedIds)) {
-        console.log('[Bump Selector] Main product not found, trying associatedIds:', bumpConfig.associatedIds);
+        console.log('[Bump Selector] Main product not found by data-title, trying associatedIds:', bumpConfig.associatedIds);
         for (var i = 0; i < bumpConfig.associatedIds.length; i++) {
-          $bumpSection = $('input[type="radio"][value="' + bumpConfig.associatedIds[i] + '"]').first().closest('.orderFormBump');
+          $bumpSection = $('[data-title="cf-multi-bump-' + bumpConfig.associatedIds[i] + '"]');
           if ($bumpSection.length) {
             console.log('[Bump Selector] Found bump section using associatedId: ' + bumpConfig.associatedIds[i]);
             break;
@@ -142,6 +137,14 @@
         console.warn('[Bump Selector] Could not find bump section for mainProductId: ' + bumpConfig.mainProductId);
         console.warn('[Bump Selector] Searched for: main=' + bumpConfig.mainProductId + ', associated=' + JSON.stringify(bumpConfig.associatedIds));
         return;
+      }
+      
+      // Get the .orderFormBump element (might be child of data-title element)
+      if (!$bumpSection.hasClass('orderFormBump')) {
+        var $innerBump = $bumpSection.find('.orderFormBump').first();
+        if ($innerBump.length) {
+          $bumpSection = $innerBump;
+        }
       }
       
       console.log('[Bump Selector] Found bump section for product: ' + bumpConfig.mainProductId);
